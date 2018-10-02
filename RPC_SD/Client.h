@@ -2,4 +2,4 @@
 
 class Client {
 	int foo(int a, int b);
-}
+};

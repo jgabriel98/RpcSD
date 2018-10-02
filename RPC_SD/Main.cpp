@@ -1,18 +1,24 @@
 #include"Headers.h"
 #include "Client.h"
+#include <stdio.h>
+
+using namespace std;
 int main(){
 	enum { client_op, host_op };
 	int opt = -1;
 
 	//Print menu interface
-	menu();
+	//menu();
 
 	cin >> opt;
 
 	switch (opt){
-	case client:
-		client()
+	case client_op:
+		//client();
 		printf("Inform host:\n");
+	}
+
+}
 
 
 

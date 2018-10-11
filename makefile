@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 CC=gcc				#C compiler
 CPPC=g++			#C++ compiler
-CFLAGS=-std=c++14 -lrpc		#standard g++ flags
+CFLAGS=-std=c++14 -lrpc	-I/home/aluno/Música/bin-rpclib/include -L/home/aluno/Música/bin-rpclib/lib	#standard g++ flags
 
 ECHOMSG := "Normal compiling mode\n"
 

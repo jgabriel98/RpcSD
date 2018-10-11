@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 CC=gcc				#C compiler
 CPPC=g++			#C++ compiler
-CFLAGS=-std=c++14 -lrpc	-I/home/aluno/Música/bin-rpclib/include -L/home/aluno/Música/bin-rpclib/lib	#standard g++ flags
+CFLAGS=-std=c++14 -pthread -lrpc	-I/home/aluno/Música/bin-rpclib/include -L/home/aluno/Música/bin-rpclib/lib	#standard g++ flags
 
 ECHOMSG := "Normal compiling mode\n"
 
@@ -13,11 +13,11 @@ BDIR =bin
 
 # object files ( .o)
 ODIR = $(BDIR)
-_OBJ = Client.o Main.o
+_OBJ = Node.o Main.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 # headers
-_DEPS = Client.h Headers.h
+_DEPS = Node.h Headers.h
 DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
 #target .c files

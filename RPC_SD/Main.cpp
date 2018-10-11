@@ -1,6 +1,5 @@
 #include"Headers.h"
 #include "Node.h"
-#include"stdafx.h"
 using namespace std;
 
 enum { client_op, host_op, exit_opt};

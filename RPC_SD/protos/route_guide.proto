@@ -1,0 +1,3 @@
+service RouteGuide{
+	rpc GetFeature(Point) returns (Feature){}
+}

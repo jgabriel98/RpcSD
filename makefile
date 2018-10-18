@@ -1,7 +1,8 @@
 SHELL = /bin/sh
 CC=gcc				#C compiler
 CPPC=g++			#C++ compiler
-CFLAGS=-std=c++14 -pthread -lrpc	-I/home/aluno/Música/bin-rpclib/include -L/home/aluno/Música/bin-rpclib/lib	#standard g++ flags
+CFLAGS=-std=c++11 `pkg-config --cflags protobuf grpc` 	#standard g++ flags
+LDFLAGS += `pkg-config --libs protobuf grpc++ grpc`
 
 ECHOMSG := "Normal compiling mode\n"
 
@@ -26,7 +27,7 @@ $(BDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	@echo "${GREEN}Compiling ${RED}$(subst $(SRCDIR)/,,$<) ${NC}"
 #target .cpp files
 $(BDIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
-	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
+	@$(CPPC) $< -c -o $@ $(CFLAGS) $(LDFLAGS) $(EXTFLG)
 	@echo "${GREEN}Compiling ${YELLOW}$(subst $(SRCDIR)/,,$<) ${NC}"
 #target .cc files
 $(BDIR)/%.o: $(SRCDIR)/%.cc $(DEPS)

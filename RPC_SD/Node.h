@@ -1,15 +1,15 @@
 #pragma once
 
-#include "rpc/this_session.h"
+
 #include <vector>
 
 
 using namespace std;
 
-class Node: rpc::server{
+class Node{
 
   private:
-	vector<rpc::client *> conexoes_client;
+	//vector<rpc::client *> conexoes_client;
 
 
   public:
@@ -19,7 +19,7 @@ class Node: rpc::server{
 	void connectToNode(string const &addr, uint16_t port);
 
 	//envia uma mensagem para o "servidor"/Node correspondente do cliente 'conexoes_client[clientIdx]' .
-	void sendMessage(string msg, uint clientIdx);
+	void sendMessage(string msg, size_t clientIdx);
 	void repassMessage(string msg);
 
 	int foo(int a, int b);

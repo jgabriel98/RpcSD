@@ -1,17 +1,17 @@
 #include"Headers.h"
 #include "Node.h"
 
-Node::Node(uint16_t port):server(port){
+Node::Node(uint16_t port){
 	//for(auto i=0; i<MAXNODES; i++)
 	//	conexoes_client.emplace_back()
 }
 
 void Node::connectToNode(string const &addr, uint16_t port){
-	conexoes_client.push_back(new rpc::client(addr, port));
+	//conexoes_client.push_back(new rpc::client(addr, port));
 }
 
 void Node::sendMessage(string msg, size_t clientIdx){
-	conexoes_client.at(clientIdx).call("print", msg);
+
 }
 
 void Node::repassMessage(string msg){

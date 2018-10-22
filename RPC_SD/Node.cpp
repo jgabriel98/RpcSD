@@ -9,15 +9,15 @@ Node::~Node() {
 
 Node::Node(uint16_t port):server(port){
 	//Message
-	this->bind("mss", [](std::string message) {cout << message << endl; });
+	this->bind("mss", [](std::string message) {cout << message; });
 
 	//Connect To Node
-	this->bind("ctn", [this](string &addr, uint16_t port) {this->connectToNode(addr, port); });
+	this->bind("ctn", [this](uint16_t port) {this->connectToNode( port); });
 }
 	
 
-void Node::connectToNode(string &addr, uint16_t port){
-	conexoes_client.push_back(new rpc::client(addr, port));
+void Node::connectToNode(uint16_t port){
+	conexoes_client.push_back(new rpc::client(IP, port));
 
 }
 

@@ -9,7 +9,7 @@ Node::~Node() {
 
 Node::Node(uint16_t port):server(port){
 	//Message
-	this->bind("mss", [](std::string message) {cout << message; });
+	this->bind("mss", [](std::string message) {cout << message <<endl; });
 
 	//Connect To Node
 	this->bind("ctn", [this](uint16_t port) {this->connectToNode( port); });

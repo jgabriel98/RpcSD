@@ -1,6 +1,6 @@
 #include "Host_Node.h"
 
-//#include"stdafx.h"
+#include"stdafx.h"
 #include"Headers.h"
 
 using namespace std;

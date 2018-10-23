@@ -1,4 +1,4 @@
-//#include"stdafx.h"
+#include"stdafx.h"
 #include"Headers.h"
 #include "Node.h"
 

@@ -58,9 +58,13 @@ void run_client(uint16_t port){
 	string mss;
 	node.connectToNode(port+1);
 	node.conexoes_client[0]->call("ctn",port);
-	while (cin >> mss && mss != "-1") {
+	/*while (cin >> mss && mss != "-1") {			//Antigo código seu - (comentário por: João Gabriel)
 		node.conexoes_client[0]->call("mss", mss);
-	}
+	}*/
+	do{
+		getline(cin, mss);
+		node.conexoes_client[0]->call("mss", mss);
+	}while(mss != "-1" && mss != "exit");
 }
 
 void run_host(uint16_t port) {
@@ -68,8 +72,12 @@ void run_host(uint16_t port) {
 	thread host_server_run([&host] { host.run(); });
 
 	string mss;
-	cin >> mss;
+	/*cin >> mss;							//Antigo código seu - (comentário por: João Gabriel)
 	while (cin >> mss && mss != "-1") {
 		host.conexoes_client[0]->call("mss", mss);
-	}
+	}*/
+	do{
+		getline(cin, mss);
+		host.conexoes_client[0]->call("mss", mss);
+	}while(mss != "-1" && mss != "sair");
 }

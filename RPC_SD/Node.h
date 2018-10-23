@@ -2,15 +2,21 @@
 
 using namespace std;
 
-class Node: public rpc::server{
+class Node:{
 
-  public:
+public:
 	vector<rpc::client *> conexoes_client;
 
-  public:
+public:
+	rpc::server* server_rpc;
+
+public:
 	  ~Node();
 
-  public:
+public:
+	void CreateServer(uint16_t port);
+
+public:
 	//construtor, informa o endereço do Host a qual vai se conectar e porta
 	  Node(uint16_t port);
 

@@ -7,18 +7,23 @@ Node::~Node() {
 
 }
 
-Node::Node(uint16_t port):server(port){
-	//Message
-	this->bind("mss", [](std::string message) {cout << message <<endl; });
+Node::Node(uint16_t port){
 
-	//Connect To Node
-	this->bind("ctn", [this](uint16_t port) {this->connectToNode( port); });
 }
 	
 
 void Node::connectToNode(uint16_t port){
 	conexoes_client.push_back(new rpc::client(IP, port));
 
+}
+
+void Node::CreateServer(uint16_t port) {
+	this->server_rpc = new rpc::server(port);
+	//Message
+	server_rpc->bind("mss", [](std::string message) {cout << message << endl; });
+
+	//Connect To Node
+	server_rpc->bind("ctn", [this](uint16_t port) {this->connectToNode(port); });
 }
 
 void Node::sendMessage(string msg, size_t clientIdx){

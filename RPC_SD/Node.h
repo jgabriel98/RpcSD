@@ -16,7 +16,6 @@ class Node{
 
 	public:
 	vector<rpc::client *> conexoes_client;
-
 	rpc::server server_rpc;
 
 	~Node();
@@ -24,11 +23,11 @@ class Node{
 	//construtor, informa o endereço do Host a qual vai se conectar e porta
 	Node(uint16_t port);
 
-	void connectNodes(uint16_t port);
+	//conecta este nó com os outros Nós (Nodes) necessários (até um maximo de MAXNODES)
+	void connectToNodes(uint16_t port);
 
 	//envia uma mensagem para o "servidor"/Node correspondente do cliente 'conexoes_client[clientIdx]' .
 	void repassMessage(string msg);
-
 };
 
 #endif

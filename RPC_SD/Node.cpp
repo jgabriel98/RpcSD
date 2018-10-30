@@ -23,7 +23,8 @@ void Node::CreateServer(uint16_t port) {
 	server_rpc.bind("requestConnect", [this](uint16_t port) { this->conexoes_client.push_back(new rpc::client(IP, port)); });
 }
 
-void Node::connectNodes(uint16_t hostPort){
+//conecta este nó com os outros Nós (Nodes) necessários (até um maximo de MAXNODES)
+void Node::connectToNodes(uint16_t hostPort){
 	//cria rpcClient e conecta-se ao objeto servidor do outro nó
 	conexoes_client.push_back(new rpc::client(IP, hostPort));
 	
@@ -33,12 +34,13 @@ void Node::connectNodes(uint16_t hostPort){
 
 
 void Node::repassMessage(string msg){
-	cout << msg << endl;
-	//conexoes_client[clientIdx]->call("sendMessage", msg);
+	cout << CYN("") << msg << endl;
 
+	/*
 	for(auto &connection: conexoes_client){
-		/* if( esse cliente ainda nao recebeu essa mensagem / ainda nao foi enviado pra esse cliente ) */
-		connection->call("sendMessage", msg);
+		// if( esse cliente ainda nao recebeu essa mensagem / ainda nao foi enviado pra esse cliente ) 
+		connection->async_call("sendMessage", msg);
 	}
+	*/
 }
 

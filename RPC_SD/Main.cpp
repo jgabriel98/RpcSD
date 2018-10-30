@@ -3,6 +3,8 @@
 #include "Node.h"
 #include "HostNode.h"
 
+/*** COMO FECHAR UM SOCKET MANUALMENTE PELO TERMINAL:  fuser -k -n tcp numero_Da_porta     *****/
+
 using namespace std;
 
 enum {zero, client_op, host_op, exit_opt=0};
@@ -68,12 +70,18 @@ void run_simpleNode(uint16_t myPort, uint16_t hostPort){
 	/*while (cin >> mss && mss != "-1") {			//Antigo código seu - (comentário por: João Gabriel)
 		node.conexoes_client[0]->call("sendMsg", mss);
 	}*/
-	cout<<GRN("Conected to Host");
+	cout<<GRN("Conected to Host")<<endl;
+	auto ret = node.conexoes_client[0]->get_connection_state();
+	if (ret == rpc::client::connection_state::initial)
+		cout<<"conection state: "<< "initial" <<endl;
+	if (ret == rpc::client::connection_state::connected)
+		cout<<"conection state: "<< "initial" <<endl;
+
 	do{
 		getline(cin, mss);
 		//node.conexoes_client[0]->call("sendMsg", mss); 		//Antigo código seu - (comentário por: João Gabriel)
 		for(auto &connectedNode: node.conexoes_client){
-			connectedNode->call("sendMsg", mss);
+			connectedNode->call("sendMessage", mss);
 		}
 	}while(mss != "-1" && mss != "exit");
 }
@@ -93,7 +101,7 @@ void run_host(uint16_t port) {
 		getline(cin, mss);
 		//host.conexoes_client[0]->call("sendMsg", mss); 		//Antigo código seu - (comentário por: João Gabriel)
 		for(auto &connectedNode: host.conexoes_client){
-			connectedNode->call("sendMsg", mss);
+			connectedNode->call("sendMessage", mss);
 		}
 	}while(mss != "-1" && mss != "sair");
 }

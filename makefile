@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 CC=gcc				#C compiler
 CPPC=g++			#C++ compiler
-CFLAGS=-std=c++14 -pthread -lrpc	-I/home/aluno/Música/bin-rpclib/include -L/home/aluno/Música/bin-rpclib/lib	#standard g++ flags
+CFLAGS=-std=c++14 -pthread -lrpc	#-I/home/aluno/Música/bin-rpclib/include -L/home/aluno/Música/bin-rpclib/lib	#standard g++ flags
 
 #CFLAGS=-std=c++11 `pkg-config --cflags protobuf grpc` 	#standard g++ flags
 #LDFLAGS += `pkg-config --libs protobuf grpc++ grpc`

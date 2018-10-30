@@ -159,9 +159,9 @@
 #define BOLD(x) x
 #define BRIGHT(x) x
 #define UNDL(x) x
-#define SetBOLD " "
-#define SetBRIGHT " "
-#define SetUNDL " "
+#define SetBOLD ""
+#define SetBRIGHT ""
+#define SetUNDL ""
 
 #endif
 

@@ -16,11 +16,11 @@ BDIR =bin
 
 # object files ( .o)
 ODIR = $(BDIR)
-_OBJ = Node.o Main.o Host_Node.o
+_OBJ = Node.o Main.o HostNode.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 # headers
-_DEPS = Node.h Headers.h Host_Node.h
+_DEPS = Node.h Headers.h HostNode.h color.h
 DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
 #target .c files

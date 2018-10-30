@@ -5,35 +5,40 @@
 using namespace std;
 
 Node::~Node() {
-
+	for(auto &clientPointer: conexoes_client){
+		delete clientPointer;
+	}
 }
 
-Node::Node(uint16_t port){
-
-}
-	
-
-void Node::connectToNode(uint16_t port){
-	conexoes_client.push_back(new rpc::client(IP, port));
+Node::Node(uint16_t port): server_rpc(port) {
+	serverPort = port;
+	CreateServer(serverPort);
 }
 
 void Node::CreateServer(uint16_t port) {
-	this->server_rpc = new rpc::server(port);
 	//Message
-	server_rpc->bind("mss", [](std::string message) {cout << message << endl; });
+	server_rpc.bind("sendMessage", [this](std::string message) { this->repassMessage(message); });
 
 	//Connect To Node
-	server_rpc->bind("ctn", [this](uint16_t port) {this->connectToNode(port); });
+	server_rpc.bind("requestConnect", [this](uint16_t port) { this->conexoes_client.push_back(new rpc::client(IP, port)); });
 }
 
-void Node::sendMessage(string msg, size_t clientIdx){
-	conexoes_client[clientIdx]->call("print", msg);
+void Node::connectNodes(uint16_t hostPort){
+	//cria rpcClient e conecta-se ao objeto servidor do outro nó
+	conexoes_client.push_back(new rpc::client(IP, hostPort));
+	
+	//chama procedimento remoto para fazer o outro nó conectar-se a este nó
+	conexoes_client.back()->call("requestConnect", this->serverPort);
 }
+
 
 void Node::repassMessage(string msg){
+	cout << msg << endl;
+	//conexoes_client[clientIdx]->call("sendMessage", msg);
 
+	for(auto &connection: conexoes_client){
+		/* if( esse cliente ainda nao recebeu essa mensagem / ainda nao foi enviado pra esse cliente ) */
+		connection->call("sendMessage", msg);
+	}
 }
 
-int Node::foo(int a, int noboB) {
-	return a;
-}

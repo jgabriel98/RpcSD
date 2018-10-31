@@ -22,7 +22,7 @@ struct NodeAddr{
 	}
 };
 
-
+//função hash para o tipo definido por usuário (strcut NodeAddr) funcionar como chave
 struct NodeAddr_hash{
 	//template <class T1, class T2>
 	std::size_t operator() (const NodeAddr &key)const{
@@ -48,6 +48,7 @@ class Node{
 	  já o segundo (conexoes_client) fora das funções Bind, no código normal mesmo, para acessar diretamente um objeto do cliente através de seu endereço (NodeAddr)
 	*/
 
+//ps: sim, precisamos do unordered_map, pra pordermos acessar o cliente diretamente e também garantir que só existe um registro para cada NodeAddr
 
 
 	rpc::server server_rpc;

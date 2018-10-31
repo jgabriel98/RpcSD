@@ -12,6 +12,8 @@ enum {zero, client_op, host_op, exit_opt=0};
 void menu();
 void run_simpleNode(uint16_t myPort, uint16_t hostPort);
 void run_host(uint16_t port);
+
+void printConnectionStates(Node &node);
 string getTimeLog();
 
 int main(){
@@ -28,12 +30,10 @@ void menu() {
 	uint16_t myPort, hostPort;
 
 	cout << " 1 - Connect to Host\n 2 - Host a chat\n0-Exit\n";
-
 	cin >> opt;
 
 	switch (opt) {
 	case client_op:
-		//client();
 		cout<<"Inform your port:\n";
 		cin >> myPort;
 		cout << "Inform host port:\n";
@@ -43,8 +43,6 @@ void menu() {
 	break;
 
 	case host_op:
-		//host();
-
 		cout << "Inform desired port:\n";
 		cin >> myPort;
 		
@@ -57,8 +55,9 @@ void menu() {
 	}
 }
 
-/* roda processo do client.
- * port: porta deste nó, onde a 
+/*--roda processo do Node (nao Host);
+ * myPort: porta deste node, serve como identificador deste Node
+ * hostPort: porta do Node host, serve como identificador da "sala de chat" 
  */
 void run_simpleNode(uint16_t myPort, uint16_t hostPort){
 	Node node(myPort);
@@ -66,31 +65,9 @@ void run_simpleNode(uint16_t myPort, uint16_t hostPort){
 	//lança X nova(s) thread(s) (nesse caso 1) para rodar o servidor e atender chamadas das funções amarradas (bind)
 	node.server_rpc.async_run(1);
 
-	node.connectToNodes(hostPort); //realiza conexão entre os dois nós (em ambas direções)
+	node.connectToNodes(hostPort); // descobre quais e conecta aos Nodes(em ambas direções, isto é, os nodes também se conectam a vc)
 
-	//cout<<GRN("Conected to Host")<<endl;
-	cout<<"connected to "<<node.conexoes_client.size()<<" Node(s)\n";
-	cout<<"conection(s) state: ";
-	for (auto &clientConection : node.conexoes_client){
-		cout<<clientConection.first.port<<"-";
-		switch (clientConection.second->get_connection_state()) {
-			case rpc::client::connection_state::initial:
-			cout<<YEL("initial\t");
-			break;
-
-			case rpc::client::connection_state::connected:
-			cout << GRN("connected\t");
-			break;
-
-			case rpc::client::connection_state::disconnected:
-			cout << RED("disconnected\t");
-			break;
-
-			case rpc::client::connection_state::reset:
-			cout << MAG("reset\t");
-			break;
-		}
-	}
+	printConnectionStates(node);
 	//limpando o buffer cin
 	cin.clear();
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -112,13 +89,19 @@ void run_simpleNode(uint16_t myPort, uint16_t hostPort){
 		}
 	}
 
+
+/*********SE DESCONECTANDO DOS NODES E DA REDE, SEMPRE TEM Q FAZER ISSO PRA N DEIXAR VESTIGIOS****************/
 	for (auto &connectedNode : node.conexoes_client)
 		connectedNode.second->send("disconnect", node.serverAddr);		//faz os nodes conectados se desconectarem de vc
 
 	rpc::client tempConection(IP, hostPort);
 	tempConection.call("exit", node.serverAddr);		//envia sinal ao host informando que está saindo da rede;
+
 }
 
+/*--roda processo do Node Host, que vai hostear a sala;
+ * port: porta deste node, serve como identificador deste Node e da sala de chat (na qual outros Nodes irão se conectar)
+ */
 void run_host(uint16_t port) {
 	HostNode host(port);
 	string mss;
@@ -145,13 +128,47 @@ void run_host(uint16_t port) {
 			connectedNode.second->async_call("sendMessage", msgLog + mss);
 		}
 	};
+
+	/**
+	 * seria legal depois implementarmos uma maneira de mudar o host da sala em runtime (claro q isso n seria tao simples)
+	 */
 	
 	host.server_rpc.stop();
 }
 
 
+/*--Imprime no terminal os estados atuais de conexões do Node
+nota: utiliza apenas o objeto conexoes_client para isso, pois não tem como descobrir quais clientes se conectaram num rpc::server.
+*/
+void printConnectionStates(Node &node){
+	cout << "connected to " << node.conexoes_client.size() << " Node(s)\n";
+	cout << "conection(s) state: ";
+	for (auto &clientConection : node.conexoes_client){
+		cout << clientConection.first.port << "-";
+		switch (clientConection.second->get_connection_state())
+		{
+		case rpc::client::connection_state::initial:
+			cout << YEL("initial\t");
+			break;
+
+		case rpc::client::connection_state::connected:
+			cout << GRN("connected\t");
+			break;
+
+		case rpc::client::connection_state::disconnected:
+			cout << RED("disconnected\t");
+			break;
+
+		case rpc::client::connection_state::reset:
+			cout << MAG("reset\t");
+			break;
+		}
+	}
+}
 
 
+/*--formata string para log de data e hora
+*/
 string getTimeLog(){
 	string timeLog;
 
@@ -166,8 +183,10 @@ string getTimeLog(){
 	month << setw(2) << setfill('0') << to_string(local_tm.tm_mon);
 
 	timeLog = BRIGHT(CYN(
-		"[" + hours.str() + ":" + minutes.str() + ", " +							   //hora
-		day.str() + "/" + month.str() + "/" + to_string(local_tm.tm_year + 1900) + "]" //data
-	));
+		"["+
+		day.str() + "/" + month.str() + "/" + to_string(local_tm.tm_year + 1900) + //data
+		", " +
+		hours.str() + ":" + minutes.str() +									   //hora
+		"]"));
 	return timeLog;
 }

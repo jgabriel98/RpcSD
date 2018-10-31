@@ -69,37 +69,54 @@ void run_simpleNode(uint16_t myPort, uint16_t hostPort){
 	node.connectToNodes(hostPort); //realiza conexão entre os dois nós (em ambas direções)
 
 	//cout<<GRN("Conected to Host")<<endl;
-	cout<<"conection state: ";
-	switch (node.conexoes_client.back()->get_connection_state()){
-		case rpc::client::connection_state::initial:
-		cout<<YEL("initial\n");
-		break;
+	cout<<"connected to "<<node.conexoes_client.size()<<" Node(s)\n";
+	cout<<"conection(s) state: ";
+	for (auto &clientConection : node.conexoes_client){
+		cout<<clientConection.first.port<<"-";
+		switch (clientConection.second->get_connection_state()) {
+			case rpc::client::connection_state::initial:
+			cout<<YEL("initial\t");
+			break;
 
-		case rpc::client::connection_state::connected:
-		cout << GRN("connected\n");
-		break;
+			case rpc::client::connection_state::connected:
+			cout << GRN("connected\t");
+			break;
 
-		case rpc::client::connection_state::disconnected:
-		cout << RED("disconnected\n");
-		break;
+			case rpc::client::connection_state::disconnected:
+			cout << RED("disconnected\t");
+			break;
 
-		case rpc::client::connection_state::reset:
-		cout << MAG("reset\n");
-		break;
+			case rpc::client::connection_state::reset:
+			cout << MAG("reset\t");
+			break;
+		}
 	}
 	//limpando o buffer cin
 	cin.clear();
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-	do{
+	cout << endl;
+	bool leave = false;
+	while(!leave){
 		getline(cin, mss);
 		string msgLog = getTimeLog() +
-						BOLD(WHT(" Node: ")); //nome do usuário, ou IP, o que quiser
-
-		for(auto &connectedNode: node.conexoes_client){
-			connectedNode->async_call("sendMessage", msgLog + mss);
+						BOLD(WHT( " "+node.name + ": " )); //nome do usuário, ou IP, o que quiser
+		
+		if (mss == "-1" || mss == "sair" || mss == "exit"){
+			mss = YEL(""+node.name + " is leaving!");
+			leave = true;
 		}
-	}while(mss != "-1" && mss != "sair" && mss != "exit");
+
+		for (auto &connectedNode : node.conexoes_client){
+			connectedNode.second->async_call("sendMessage", msgLog + mss);
+		}
+	}
+
+	for (auto &connectedNode : node.conexoes_client)
+		connectedNode.second->send("disconnect", node.serverAddr);		//faz os nodes conectados se desconectarem de vc
+
+	rpc::client tempConection(IP, hostPort);
+	tempConection.call("exit", node.serverAddr);		//envia sinal ao host informando que está saindo da rede;
 }
 
 void run_host(uint16_t port) {
@@ -112,18 +129,27 @@ void run_host(uint16_t port) {
 	cin.clear();
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-	do{
+	cout<<endl;
+	bool leave = false;
+	while(!leave){
 		getline(cin, mss);
 		string msgLog = getTimeLog() +
-						BOLD(WHT(" Host: ")); //nome do usuário, ou IP, o que quiser
+						BOLD(WHT( " "+host.name+"(Host): ")); //nome do usuário, ou IP, o que quiser
+
+		if (mss == "-1" || mss == "sair" || mss == "exit"){
+			mss = host.name+"(host) is leaving!";
+			leave = true;
+		}
 
 		for(auto &connectedNode: host.conexoes_client){
-			connectedNode->async_call("sendMessage", msgLog + mss);
+			connectedNode.second->async_call("sendMessage", msgLog + mss);
 		}
-	}while(mss != "-1" && mss != "sair" && mss != "exit");
+	};
 	
 	host.server_rpc.stop();
 }
+
+
 
 
 string getTimeLog(){
@@ -132,9 +158,16 @@ string getTimeLog(){
 	time_t tt = chrono::system_clock::to_time_t(chrono::system_clock::now());
 	tm local_tm = *localtime(&tt); //get local time, insteand of UTC time --> *gmtime(&tt);
 
+	//formata as strings
+	stringstream minutes, hours, day, month;
+	hours << setw(2) << setfill('0') << to_string(local_tm.tm_hour);
+	minutes << setw(2)<<setfill('0')<<to_string(local_tm.tm_min);
+	day << setw(2) << setfill('0') << to_string(local_tm.tm_mday);
+	month << setw(2) << setfill('0') << to_string(local_tm.tm_mon);
+
 	timeLog = BRIGHT(CYN(
-		"[" + to_string(local_tm.tm_hour) + ":" + to_string(local_tm.tm_min) + ", " +									//hora
-		to_string(local_tm.tm_mday) + "/" + to_string(local_tm.tm_mon) + "/" + to_string(local_tm.tm_year + 1900) + "]" //data
-		));
+		"[" + hours.str() + ":" + minutes.str() + ", " +							   //hora
+		day.str() + "/" + month.str() + "/" + to_string(local_tm.tm_year + 1900) + "]" //data
+	));
 	return timeLog;
 }

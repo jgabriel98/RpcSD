@@ -27,7 +27,7 @@
     <ClInclude Include="Node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Host_Node.h">
+    <ClInclude Include="HostNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -41,7 +41,7 @@
     <ClCompile Include="Node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Host_Node.cpp">
+    <ClCompile Include="HostNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

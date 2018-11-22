@@ -20,6 +20,28 @@ struct NodeAddr{
 	bool operator==(const NodeAddr &other) const{	//define operador ==, necessário para a função hash usada em unordered_map
 		return (ip == other.ip && port == other.port);
 	}
+	bool operator!=(const NodeAddr &other) const{	//define operador ==, necessário para a função hash usada em unordered_map
+		return !(*this==other);
+	}
+	bool operator<(const NodeAddr &other) const{
+		if (ip == other.ip)	return port < other.port;
+		
+		return ip < other.ip;
+	}
+};
+
+struct MSG_ID{
+	struct NodeAddr senderAddr;
+	unsigned short msgCounter;		//act like a unique message code for the Node who sent it/make it
+
+	MSGPACK_DEFINE_ARRAY(senderAddr, msgCounter) // adiciona/registra esse tipo de dado ao rpc.
+};
+
+struct MSG_PACKET{
+	struct MSG_ID code;
+	string msg;
+
+	MSGPACK_DEFINE_ARRAY(code, msg) // adiciona/registra esse tipo de dado ao rpc.
 };
 
 //função hash para o tipo definido por usuário (strcut NodeAddr) funcionar como chave
@@ -37,10 +59,14 @@ struct NodeAddr_hash{
 
 class Node{
 	protected:
+	map<NodeAddr, unsigned short> received_msg_counter;		//counters for the received messages, there's a counter for each Node in network (excluding itself)
+	std::mutex connections_mutex;
+	std::mutex counters_mutex;
 
 	public:
 	NodeAddr serverAddr;	//funciona como identificador do Node, seria mais apropriado chamar de myAddr?
 	string name="?";
+	unsigned short msgCounter = 0;		//message counter, for this node itself.
 	
 	//mapeia um endereço de nó para o objeto do cliente
 	unordered_map<NodeAddr, rpc::client *, NodeAddr_hash> conexoes_client;
@@ -65,7 +91,7 @@ class Node{
 	void connectToNodes(uint16_t port);
 
 	//envia uma mensagem para o "servidor"/Node correspondente do cliente 'conexoes_client[clientIdx]' .
-	void repassMessage(string msg);
+	void repassMessage(NodeAddr senderAddr, struct MSG_PACKET packet);
 };
 
 #endif

@@ -21,13 +21,16 @@ Node::Node(uint16_t port): server_rpc(port) {
 
 void Node::CreateServer(uint16_t port) {
 	//Message
-	server_rpc.bind("sendMessage", [this](std::string message) { this->repassMessage(message); });
+	server_rpc.bind("sendMessage", [this](NodeAddr callerAddr, MSG_PACKET message) { this->repassMessage(callerAddr, message); });
 
 	//Connect To caller Node
 	server_rpc.bind("requestConnect", [this](NodeAddr callerAddr) {
 		cout<<callerAddr.port<<" asked to conect to him\n";
 
+		connections_mutex.lock();
 		auto sucess2 = this->conexoes_client.insert({callerAddr, new rpc::client(callerAddr.ip, callerAddr.port)});
+		connections_mutex.unlock();
+
 		if(sucess2.second == false){
 			cout << "erro ao conectar-se ao Node (NodeAddr (ip e porta) já existe)" << callerAddr.ip<<" - "<< callerAddr.port << endl;
 			return; //aqui devemos retornar um rpc::error, implementar depois
@@ -58,7 +61,10 @@ void Node::connectToNodes(uint16_t hostPort){
 		for (auto &nodeToConnect : nodesVizinhos){
 			rpc::client *newClient = new rpc::client(nodeToConnect.ip, nodeToConnect.port); //cria rpcClient e conecta-se ao objeto servidor do outro nó
 
+			connections_mutex.lock();
 			auto sucess = conexoes_client.insert({nodeToConnect, newClient});	//adiciona a lista de clients(Nodes) conectados
+			connections_mutex.unlock();
+			
 			if (sucess.second == false){
 				cout << "erro ao conectar-se ao Node (já existe registro em conexoes_client)" << nodeToConnect.port << endl;
 				//aqui deverá então tratar desse erro e conectar-se a algum outro, ou ficar sem mesmo?
@@ -86,14 +92,46 @@ void Node::connectToNodes(uint16_t hostPort){
 }
 
 
-void Node::repassMessage(string msg){
-	cout << CYN("") << msg << endl;
+void Node::repassMessage(NodeAddr callerAddr, MSG_PACKET packet){
+	MSG_ID msg_code = packet.code;
 
-	/*
-	for(auto &connection: conexoes_client){
-		// if( esse cliente ainda nao recebeu essa mensagem / ainda nao foi enviado pra esse cliente ) 
-		connection->async_call("sendMessage", msg);
+	// check if there the key 'msg_id_senderAddr' exist in the received_msg_counter map
+	counters_mutex.lock();
+	bool is_firstMsg = ( received_msg_counter.find(msg_code.senderAddr) == received_msg_counter.end() ) ? true : false;
+	counters_mutex.unlock();
+
+	if (is_firstMsg){	//if there's still no counter registred for this sender Node
+		cout<<"Primeira mensagem de "<<msg_code.senderAddr.port<<" chegando aqui!\n";
+		cout << CYN("") << packet.msg << endl;
+
+		received_msg_counter.insert({msg_code.senderAddr, msg_code.msgCounter}); //then create it and set the counter value
+
+		connections_mutex.lock();
+		for(auto &connection: conexoes_client){
+			if(callerAddr != connection.first){
+				cout << "\tdebug: encaminhando para " << connection.first.port << endl;
+				connection.second->async_call("sendMessage", serverAddr, packet);
+			}
+		}
+		connections_mutex.unlock();
+
+	}else{
+		//se a mensagem não passou por esse Node ainda, a envia para os vizinhos
+		if ( received_msg_counter.at(msg_code.senderAddr) < msg_code.msgCounter){
+			cout << CYN("") << packet.msg << endl;
+
+			connections_mutex.lock();
+			for(auto &connection: conexoes_client){
+				if (callerAddr != connection.first){
+					cout<<"\tdebug: encaminhando para "<<connection.first.port<<endl;
+					connection.second->async_call("sendMessage", serverAddr, packet);
+				}
+			}
+			connections_mutex.unlock();
+
+			received_msg_counter.at(msg_code.senderAddr) = msg_code.msgCounter;	//atualiza o contador
+		}
 	}
-	*/
+
 }
 

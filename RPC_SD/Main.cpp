@@ -84,9 +84,12 @@ void run_simpleNode(uint16_t myPort, uint16_t hostPort){
 			leave = true;
 		}
 
+		MSG_ID msg_code = {node.serverAddr, node.msgCounter};
+		MSG_PACKET packet = {msg_code, msgLog + mss};
 		for (auto &connectedNode : node.conexoes_client){
-			connectedNode.second->async_call("sendMessage", msgLog + mss);
+			connectedNode.second->async_call("sendMessage", node.serverAddr, packet);
 		}
+		node.msgCounter++;
 	}
 
 
@@ -124,9 +127,12 @@ void run_host(uint16_t port) {
 			leave = true;
 		}
 
+		MSG_ID msg_code = {host.serverAddr, host.msgCounter};
+		MSG_PACKET packet = {msg_code, msgLog + mss};
 		for(auto &connectedNode: host.conexoes_client){
-			connectedNode.second->async_call("sendMessage", msgLog + mss);
+			connectedNode.second->async_call("sendMessage", host.serverAddr, packet);
 		}
+		host.msgCounter++;
 	};
 
 	/**

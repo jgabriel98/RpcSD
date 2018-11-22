@@ -6,32 +6,32 @@
 using namespace std;
 
 HostNode::HostNode(uint16_t port) : Node(port) {
-    CreateServer(port);
+	CreateServer(port);
 }
 
-void HostNode::CreateServer(uint16_t port){
-    //faz os bindings padrões de um Node
-    //Node::CreateServer(port);
+void HostNode::CreateServer(uint16_t port) {
+	//faz os bindings padrões de um Node
+	//Node::CreateServer(port);
 
-    //return neighbors Nodes list that the caller must connect
-    server_rpc.bind("getCloseNodes", [this](NodeAddr &newNode) { 
-		return calculateNodesToConnect(newNode); 
+	//return neighbors Nodes list that the caller must connect
+	server_rpc.bind("getCloseNodes", [this](NodeAddr &newNode) {
+		return calculateNodesToConnect(newNode);
 	});
 
-    server_rpc.bind("registerNodeToNet", [this](NodeAddr &newNode){ 
-		this->nodes_in_Network.push_back(newNode); cout <<"nodes in Network = "+to_string(nodes_in_Network.size())+"\n";
+	server_rpc.bind("registerNodeToNet", [this](NodeAddr &newNode) {
+		this->nodes_in_Network.push_back(newNode); cout << "nodes in Network = " + to_string(nodes_in_Network.size()) + "\n";
 	});
 
-    //remove o registro do NodeCaller da rede
-    server_rpc.bind("exit", [this](NodeAddr callerAddr) {
-        cout<<to_string(callerAddr.port)+" called exit() by rpc\n";
-        rpc::this_session().post_exit(); //finaliza sessao/conexao com esse client
-        //nodes_in_Network.remove(callerAddr);
-    });
+	//remove o registro do NodeCaller da rede
+	server_rpc.bind("exit", [this](NodeAddr callerAddr) {
+		cout << to_string(callerAddr.port) + " called exit() by rpc\n";
+		rpc::this_session().post_exit(); //finaliza sessao/conexao com esse client
+		//nodes_in_Network.remove(callerAddr);
+	});
 
-    nodes_in_Network.push_back(this->serverAddr);
-    //server_rpc.suppress_exceptions(false);
-	
+	nodes_in_Network.push_back(this->serverAddr);
+	//server_rpc.suppress_exceptions(false);
+
 	vector <int> n0;
 	n0.push_back(0);
 	node_graph.push_back(n0);
@@ -40,8 +40,12 @@ void HostNode::CreateServer(uint16_t port){
 	qnode = 1;
 }
 
-list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr){
+list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr) {
 	//List of nodes to connect to
+
+	for (int i = 0; i < priority_list.size(); i++) {
+		printf("PRIORITY LIST %d %d \n", priority_list[i].first, priority_list[i].second);
+	}
 	list<NodeAddr> nodes_to_connect;
 	vector<int> edges;
 
@@ -58,7 +62,7 @@ list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr){
 	int qnode = (int)nodes_in_Network.size();
 
 	//adjust the node graph
-	for (int i = 0; i < (int) node_graph.size(); i++) {
+	for (int i = 0; i < (int)node_graph.size(); i++) {
 		node_graph[i].push_back(0);
 		edges.push_back(0);
 	}
@@ -66,13 +70,6 @@ list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr){
 	node_graph.push_back(edges);
 
 
-	cout << "PRINT 2\n";
-	for (int i = 0; i < node_graph.size(); i++) {
-		for (int j = 0; j < node_graph.size(); j++) {
-			cout << node_graph[i][j] << " ";
-		}
-		cout << endl;
-	}
 
 
 	//Gets first node from the priority list;
@@ -87,6 +84,13 @@ list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr){
 		priority_list.erase(priority_list.begin());
 	}
 
+	cout << "PRINT 2\n";
+	for (int i = 0; i < node_graph.size(); i++) {
+		for (int j = 0; j < node_graph.size(); j++) {
+			cout << node_graph[i][j] << " ";
+		}
+		cout << endl;
+	}
 
 	if (qnode >= NODES_TO_TRIGER_DIJSTRA) {
 		//DIKSTRA
@@ -116,67 +120,67 @@ list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr){
 				}
 			}
 
-			int u = min;
+			int u = min_index;
 			// Mark the picked vertex as processed 
 			sptSet[u] = true;
-		}
+
 			// Update dist value of the adjacent vertices of the picked vertex. 
 			for (int v = 0; v < qnode; v++) {
 
 				// Update dist[v] only if is not in sptSet, there is an edge from  
 				// u to v, and total weight of path from src to  v through u is  
 				// smaller than current value of dist[v] 
-				if (!sptSet[v] && node_graph[u][v]
-					&& dist[u] != INT_MAX
+				if (!sptSet[v] && 
+					node_graph[u][v] && 
+					dist[u] != INT_MAX
 					&& dist[u] + node_graph[u][v] < dist[v]) {
-
 					dist[v] = dist[u] + node_graph[u][v];
-
 				}
 			}
+		}
 
 
-			//the two most distant nodes that will be added to nodes_to_connect
-			int v1 = 0, b1 = 0, v2 = 0, b2 = 0, c1 = 0, c2 = 0;
+		//the two most distant nodes that will be added to nodes_to_connect
+		int v1 = 0, b1 = 0, v2 = 0, b2 = 0, c1 = 0, c2 = 0;
 
-			//Checks the most distant nodes that are in the priority list
-			for (int i = 0; i < priority_list.size(); i++) {
-				cout << dist[priority_list[i].first] << " ";
-				if (v1 > dist[priority_list[i].first]) {
-					b1 = priority_list[i].first;
-					v1 = dist[priority_list[i].first];
-					c1 = i;
-				}
-
-				else if (v2 > dist[priority_list[i].first]) {
-					b2 = priority_list[i].first;
-					v2 = dist[priority_list[i].first];
-					c2 = i;
-				}
-			}
-			cout << endl<<"FUCK YOU\n\n\n\n";
-			//Adds the two chosen nodes to the list and adjust the graph
-			nodes_to_connect.push_back(nodes_in_Network[b1]);
-			node_graph[b1][qnode] = 1;
-			node_graph[qnode][b1] = 1;
-			
-			nodes_to_connect.push_back(nodes_in_Network[b2]);
-			node_graph[b2][qnode] = 1;
-			node_graph[qnode- 1][b2] = 1;
-
-			//adjust priority list
-			priority_list[c1].second--;
-			if (priority_list[c1].second <= 0) {
-				priority_list.erase(priority_list.begin() + c1);
+		cout << priority_list.size() << "HERE \n\n";
+		//Checks the most distant nodes that are in the priority list
+		for (int i = 0; i < priority_list.size(); i++) {
+			cout <<"distancia"<< dist[priority_list[i].first] << "\nNode:"<<priority_list[i].first;
+			if (v1 < dist[priority_list[i].first]) {
+				b1 = priority_list[i].first;
+				v1 = dist[priority_list[i].first];
+				c1 = i;
 			}
 
-			priority_list[c2].second--;
-			if (priority_list[c2].second <= 0) {
-				priority_list.erase(priority_list.begin() + c2);
+			else if (v2 < dist[priority_list[i].first]) {
+				b2 = priority_list[i].first;
+				v2 = dist[priority_list[i].first];
+				c2 = i;
 			}
+		}
+		//Adds the two chosen nodes to the list and adjust the graph
+		nodes_to_connect.push_back(nodes_in_Network[b1]);
+		node_graph[b1][qnode] = 1;
+		node_graph[qnode][b1] = 1;
+
+		nodes_to_connect.push_back(nodes_in_Network[b2]);
+		node_graph[b2][qnode] = 1;
+		node_graph[qnode - 1][b2] = 1;
+
+		//adjust priority list
+		priority_list[c1].second--;
+		if (priority_list[c1].second <= 0) {
+			priority_list.erase(priority_list.begin() + c1);
+		}
+
+		priority_list[c2].second--;
+		if (priority_list[c2].second <= 0) {
+			priority_list.erase(priority_list.begin() + c2);
+		}
 
 		//Add new node to priority list
-		priority_list.push_back(make_pair(qnode, MAXNODES-2));
+		priority_list.push_back(make_pair(qnode, MAXNODES - 2));
 	}
 
 	else {
@@ -193,5 +197,5 @@ list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr){
 	}
 
 	return(nodes_to_connect);
-    
+
 }

@@ -22,7 +22,7 @@ public:
 	vector< vector<int>> node_graph;
 
 public:
-	list< pair<int, int>> priority_list;
+	vector< pair<int, int>> priority_list;
 
 public:
 	int qnode;

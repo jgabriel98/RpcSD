@@ -56,9 +56,11 @@ void Node::connectToNodes(uint16_t hostPort){
 	rpc::client hostNode(IP, hostPort);
 
 	try{
-		list<NodeAddr> nodesVizinhos = hostNode.call("getCloseNodes", this->serverAddr).as<list<NodeAddr>>();
+		list<NodeAddr> nodesConnected = hostNode.call("getCloseNodes", this->serverAddr).as<list<NodeAddr>>();
+		//termina sessao (conexao) com o Host
+		//hostNode.call("disconnect", serverAddr);
 
-		for (auto &nodeToConnect : nodesVizinhos){
+		for (auto &nodeToConnect : nodesConnected){
 			rpc::client *newClient = new rpc::client(nodeToConnect.ip, nodeToConnect.port); //cria rpcClient e conecta-se ao objeto servidor do outro nó
 
 			connections_mutex.lock();
@@ -75,11 +77,10 @@ void Node::connectToNodes(uint16_t hostPort){
 		}
 		cout<<endl;
 
+		//rpc::client temp(IP, hostPort);
 		//registra esse Node à lista de nodes, armazenada no Host
 		hostNode.call("registerNodeToNet", serverAddr);
 
-		//termina sessao (conexao) com o Host
-		hostNode.send("disconnect", serverAddr);
 	} catch (rpc::rpc_error &e) {
 		std::cout << std::endl << e.what() << std::endl;
 		std::cout << "in function " << e.get_function_name() << ": ";

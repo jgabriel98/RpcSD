@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include <vector>
+#include <utility>
 #include <memory>
 #include <string>
 #include <list>
@@ -17,4 +18,5 @@
 
 #define MAXNODES 4
 #define IP "127.0.0.1"
-
+#define HOST_CONNECTIONS 2
+#define NODES_TO_TRIGER_DIJSTRA 4

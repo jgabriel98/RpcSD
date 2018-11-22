@@ -53,9 +53,9 @@ void Node::connectToNodes(uint16_t hostPort){
 	rpc::client hostNode(IP, hostPort);
 
 	try{
-		list<NodeAddr> nodesVizinhos = hostNode.call("getCloseNodes", this->serverAddr).as<list<NodeAddr>>();
+		list<NodeAddr> nodesConnected = hostNode.call("getCloseNodes", this->serverAddr).as<list<NodeAddr>>();
 
-		for (auto &nodeToConnect : nodesVizinhos){
+		for (auto &nodeToConnect : nodesConnected){
 			rpc::client *newClient = new rpc::client(nodeToConnect.ip, nodeToConnect.port); //cria rpcClient e conecta-se ao objeto servidor do outro nó
 
 			auto sucess = conexoes_client.insert({nodeToConnect, newClient});	//adiciona a lista de clients(Nodes) conectados

@@ -10,13 +10,25 @@ using namespace std;
 
 class HostNode : public Node {
   private:
-    list<NodeAddr> nodes_in_Network;
+    vector<NodeAddr> nodes_in_Network;
     //executa o algoritmo para calculo do(s) nó(s) que o novo node deve se conectar
     list<NodeAddr> calculateNodesToConnect(NodeAddr newNodeAddr);
 
   public:
     void CreateServer(uint16_t port);
 	  HostNode(uint16_t port);
+
+public:
+	vector< vector<int>> node_graph;
+
+public:
+	list< pair<int, int>> priority_list;
+
+public:
+	int qnode;
+
 };
+
+
 
 #endif

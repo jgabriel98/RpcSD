@@ -15,8 +15,10 @@
 
 
 #pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
-
-#define MAXNODES 4
 #define IP "127.0.0.1"
+
+
+#define NODE_CONNECTIONS 4
 #define HOST_CONNECTIONS 3
-#define NODES_TO_TRIGER_DIJSTRA 13
+#define NODES_TO_TRIGER_DIJKSTRA 13
+#define NODES_TO_CONNECT_ON_DIJKSRTA 2

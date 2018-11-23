@@ -92,100 +92,87 @@ list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr) {
 		cout << endl;
 	}
 
-	if (qnode >= NODES_TO_TRIGER_DIJSTRA) {
+	if (qnode >= NODES_TO_TRIGER_DIJKSTRA) {
 		//DIKSTRA
 
-		vector<int> dist;     // The output array.  dist[i] will hold the shortest  distance from src to i 
-		vector<bool> sptSet;		// sptSet[i] will be true if vertex i is included in shortest path tree or shortest distance from src to i is finalized 
+		for (int dijkstra_count = 0; dijkstra_count < NODES_TO_CONNECT_ON_DIJKSRTA; dijkstra_count ++) {
 
-		for (int i = 0; i < node_graph.size(); i++)
-			dist.push_back(INT_MAX), sptSet.push_back(false);
+			vector<int> dist;     // The output array.  dist[i] will hold the shortest  distance from src to i 
+			vector<bool> sptSet;		// sptSet[i] will be true if vertex i is included in shortest path tree or shortest distance from src to i is finalized 
 
-		// Distance of source vertex from itself is always 0 
-		dist.back() = 0;
-		sptSet.back() = false;
+			for (int i = 0; i < node_graph.size(); i++)
+				dist.push_back(INT_MAX), sptSet.push_back(false);
 
-		// Find shortest path for all vertices 
-		for (int count = 0; count < qnode; count++)
-		{
-			// Pick the minimum distance vertex from the set of vertices not 
-			// yet processed. u is always equal to src in the first iteration. 
+			// Distance of source vertex from itself is always 0 
+			dist.back() = 0;
+			sptSet.back() = false;
 
-			// Initialize min value 
-			int min = INT_MAX, min_index;
+			// Find shortest path for all vertices 
+			for (int count = 0; count < qnode; count++)
+			{
+				// Pick the minimum distance vertex from the set of vertices not 
+				// yet processed. u is always equal to src in the first iteration. 
 
-			for (int v = 0; v < node_graph.size(); v++) {
-				if (sptSet[v] == false && dist[v] <= min) {
-					min = dist[v], min_index = v;
+				// Initialize min value 
+				int min = INT_MAX, min_index;
+
+				for (int v = 0; v < node_graph.size(); v++) {
+					if (sptSet[v] == false && dist[v] <= min) {
+						min = dist[v], min_index = v;
+					}
+				}
+
+				int u = min_index;
+				// Mark the picked vertex as processed 
+				sptSet[u] = true;
+
+				// Update dist value of the adjacent vertices of the picked vertex. 
+				for (int v = 0; v < qnode; v++) {
+
+					// Update dist[v] only if is not in sptSet, there is an edge from  
+					// u to v, and total weight of path from src to  v through u is  
+					// smaller than current value of dist[v] 
+					if (!sptSet[v] &&
+						node_graph[u][v] &&
+						dist[u] != INT_MAX
+						&& dist[u] + node_graph[u][v] < dist[v]) {
+						dist[v] = dist[u] + node_graph[u][v];
+					}
 				}
 			}
 
-			int u = min_index;
-			// Mark the picked vertex as processed 
-			sptSet[u] = true;
 
-			// Update dist value of the adjacent vertices of the picked vertex. 
-			for (int v = 0; v < qnode; v++) {
+			//the two most distant nodes that will be added to nodes_to_connect
+			int v1 = 0, b1 = 0, c1 = 0;
 
-				// Update dist[v] only if is not in sptSet, there is an edge from  
-				// u to v, and total weight of path from src to  v through u is  
-				// smaller than current value of dist[v] 
-				if (!sptSet[v] && 
-					node_graph[u][v] && 
-					dist[u] != INT_MAX
-					&& dist[u] + node_graph[u][v] < dist[v]) {
-					dist[v] = dist[u] + node_graph[u][v];
+			//Checks the most distant nodes that are in the priority list
+			for (int i = 0; i < priority_list.size(); i++) {
+				if (v1 < dist[priority_list[i].first]) {
+					b1 = priority_list[i].first;
+					v1 = dist[priority_list[i].first];
+					c1 = i;
 				}
 			}
-		}
+			//Adds the two chosen nodes to the list and adjust the graph
+			nodes_to_connect.push_back(nodes_in_Network[b1]);
+			node_graph[b1][qnode] = 1;
+			node_graph[qnode][b1] = 1;
 
-
-		//the two most distant nodes that will be added to nodes_to_connect
-		int v1 = 0, b1 = 0, v2 = 0, b2 = 0, c1 = 0, c2 = 0;
-
-		cout << priority_list.size() << "HERE \n\n";
-		//Checks the most distant nodes that are in the priority list
-		for (int i = 0; i < priority_list.size(); i++) {
-			cout <<"distancia"<< dist[priority_list[i].first] << "\nNode:"<<priority_list[i].first;
-			if (v1 < dist[priority_list[i].first]) {
-				b1 = priority_list[i].first;
-				v1 = dist[priority_list[i].first];
-				c1 = i;
+			//adjust priority list
+			priority_list[c1].second--;
+			if (priority_list[c1].second <= 0) {
+				priority_list.erase(priority_list.begin() + c1);
 			}
 
-			else if (v2 < dist[priority_list[i].first]) {
-				b2 = priority_list[i].first;
-				v2 = dist[priority_list[i].first];
-				c2 = i;
-			}
-		}
-		//Adds the two chosen nodes to the list and adjust the graph
-		nodes_to_connect.push_back(nodes_in_Network[b1]);
-		node_graph[b1][qnode] = 1;
-		node_graph[qnode][b1] = 1;
-
-		nodes_to_connect.push_back(nodes_in_Network[b2]);
-		node_graph[b2][qnode] = 1;
-		node_graph[qnode - 1][b2] = 1;
-
-		//adjust priority list
-		priority_list[c1].second--;
-		if (priority_list[c1].second <= 0) {
-			priority_list.erase(priority_list.begin() + c1);
-		}
-
-		priority_list[c2].second--;
-		if (priority_list[c2].second <= 0) {
-			priority_list.erase(priority_list.begin() + c2);
 		}
 
 		//Add new node to priority list
-		priority_list.push_back(make_pair(qnode, MAXNODES - 2));
+		priority_list.push_back(make_pair(qnode, NODE_CONNECTIONS - NODES_TO_CONNECT_ON_DIJKSRTA - 1));
 	}
 
 	else {
 		//Add new node to priority list
-		priority_list.push_back(make_pair(qnode, MAXNODES - 1));
+		priority_list.push_back(make_pair(qnode, NODE_CONNECTIONS - 1));
 	}
 
 	cout << "PRINT 3\n";

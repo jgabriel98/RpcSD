@@ -16,16 +16,16 @@ class HostNode : public Node {
 
   public:
     void CreateServer(uint16_t port);
-	  HostNode(uint16_t port);
+    HostNode(uint16_t port, string nickName = "");
 
-public:
-	vector< vector<int>> node_graph;
+  public:
+    vector<vector<int>> node_graph;
 
-public:
-	vector< pair<int, int>> priority_list;
+  public:
+    vector<pair<int, int>> priority_list;
 
-public:
-	int qnode;
+  public:
+    int qnode;
 
 };
 

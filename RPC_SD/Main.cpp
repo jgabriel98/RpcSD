@@ -10,15 +10,13 @@ using namespace std;
 enum {zero, client_op, host_op, exit_opt=0};
 
 void menu();
-void run_simpleNode(uint16_t myPort, uint16_t hostPort);
-void run_host(uint16_t port);
+void run_simpleNode(string nickName, uint16_t myPort, uint16_t hostPort);
+void run_host(string nickName, uint16_t port);
 
 void printConnectionStates(Node &node);
 string getTimeLog();
 
 int main(){
-	int opt = -1;
-
 	//Print menu interface
 	menu();
 
@@ -26,8 +24,12 @@ int main(){
 
 void menu() {
 	int opt = -1;
-	string addr;
+	string addr, name;
 	uint16_t myPort, hostPort;
+
+	cout << "enter your nickName(leave blank to default): ";
+	cin >> name;
+	
 
 	cout << " 1 - Connect to Host\n 2 - Host a chat\n0-Exit\n";
 	cin >> opt;
@@ -39,14 +41,14 @@ void menu() {
 		cout << "Inform host port:\n";
 		cin >> hostPort;
 
-		run_simpleNode(myPort, hostPort);
+		run_simpleNode(name, myPort, hostPort);
 	break;
 
 	case host_op:
 		cout << "Inform desired port:\n";
 		cin >> myPort;
 		
-		run_host(myPort);
+		run_host(name, myPort);
 		break;
 
 	case exit_opt:
@@ -59,8 +61,8 @@ void menu() {
  * myPort: porta deste node, serve como identificador deste Node
  * hostPort: porta do Node host, serve como identificador da "sala de chat" 
  */
-void run_simpleNode(uint16_t myPort, uint16_t hostPort){
-	Node node(myPort);
+void run_simpleNode(string name, uint16_t myPort, uint16_t hostPort){
+	Node node(myPort, name);
 	string mss;
 	//lança X nova(s) thread(s) (nesse caso 1) para rodar o servidor e atender chamadas das funções amarradas (bind)
 	node.server_rpc.async_run(1);
@@ -77,10 +79,10 @@ void run_simpleNode(uint16_t myPort, uint16_t hostPort){
 	while(!leave){
 		getline(cin, mss);
 		string msgLog = getTimeLog() +
-						BOLD(WHT( " "+node.name + ": " )); //nome do usuário, ou IP, o que quiser
+						BOLD(WHT( " "+node.name() + ": " )); //nome do usuário, ou IP, o que quiser
 		
 		if (mss == "-1" || mss == "sair" || mss == "exit"){
-			mss = YEL(""+node.name + " is leaving!");
+			mss = YEL(""+node.name() + " is leaving!");
 			leave = true;
 		}
 
@@ -105,8 +107,8 @@ void run_simpleNode(uint16_t myPort, uint16_t hostPort){
 /*--roda processo do Node Host, que vai hostear a sala;
  * port: porta deste node, serve como identificador deste Node e da sala de chat (na qual outros Nodes irão se conectar)
  */
-void run_host(uint16_t port) {
-	HostNode host(port);
+void run_host(string name, uint16_t port) {
+	HostNode host(port, name);
 	string mss;
 	//lança X nova(s) thread(s) (nesse caso 1) para rodar o servidor e atender chamadas das funções amarradas (bind)
 	host.server_rpc.async_run(1);
@@ -120,10 +122,10 @@ void run_host(uint16_t port) {
 	while(!leave){
 		getline(cin, mss);
 		string msgLog = getTimeLog() +
-						BOLD(WHT( " "+host.name+"(Host): ")); //nome do usuário, ou IP, o que quiser
+						BOLD(WHT( " "+host.name()+"(Host): ")); //nome do usuário, ou IP, o que quiser
 
 		if (mss == "-1" || mss == "sair" || mss == "exit"){
-			mss = host.name+"(host) is leaving!";
+			mss = host.name()+"(host) is leaving!";
 			leave = true;
 		}
 

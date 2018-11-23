@@ -12,12 +12,16 @@ Node::~Node() {
 	}
 }
 
-Node::Node(uint16_t port): server_rpc(port) {
+Node::Node(uint16_t port, string nickName): server_rpc(port) {
 	serverAddr.ip = IP;
 	serverAddr.port= port;
-	name = "Node"+to_string(port);
+	if (nickName == "")
+		_name = "guest " + serverAddr.ip + to_string(port);
+	else
+		_name = nickName;
 	CreateServer(port);
 }
+
 
 void Node::CreateServer(uint16_t port) {
 	//Message
@@ -56,7 +60,7 @@ void Node::connectToNodes(uint16_t hostPort){
 	rpc::client hostNode(IP, hostPort);
 
 	try{
-		list<NodeAddr> nodesConnected = hostNode.call("getCloseNodes", this->serverAddr).as<list<NodeAddr>>();
+		list<NodeAddr> nodesConnected = hostNode.call("getNodesToConnect", this->serverAddr).as<list<NodeAddr>>();
 		//termina sessao (conexao) com o Host
 		//hostNode.call("disconnect", serverAddr);
 
@@ -102,18 +106,14 @@ void Node::repassMessage(NodeAddr callerAddr, MSG_PACKET packet){
 	counters_mutex.unlock();
 
 	if (is_firstMsg){	//if there's still no counter registred for this sender Node
-		cout<<"Primeira mensagem de "<<msg_code.senderAddr.port<<" chegando aqui!\n";
 		cout << CYN("") << packet.msg << endl;
 
 		received_msg_counter.insert({msg_code.senderAddr, msg_code.msgCounter}); //then create it and set the counter value
 
 		connections_mutex.lock();
-		for(auto &connection: conexoes_client){
-			if(callerAddr != connection.first){
-				cout << "\tdebug: encaminhando para " << connection.first.port << endl;
-				connection.second->async_call("sendMessage", serverAddr, packet);
-			}
-		}
+		for(auto &connection: conexoes_client)
+			if(callerAddr != connection.first)	connection.second->async_call("sendMessage", serverAddr, packet);
+			
 		connections_mutex.unlock();
 
 	}else{
@@ -122,12 +122,9 @@ void Node::repassMessage(NodeAddr callerAddr, MSG_PACKET packet){
 			cout << CYN("") << packet.msg << endl;
 
 			connections_mutex.lock();
-			for(auto &connection: conexoes_client){
-				if (callerAddr != connection.first){
-					cout<<"\tdebug: encaminhando para "<<connection.first.port<<endl;
-					connection.second->async_call("sendMessage", serverAddr, packet);
-				}
-			}
+			for(auto &connection: conexoes_client)
+				if (callerAddr != connection.first)	connection.second->async_call("sendMessage", serverAddr, packet);
+				
 			connections_mutex.unlock();
 
 			received_msg_counter.at(msg_code.senderAddr) = msg_code.msgCounter;	//atualiza o contador
@@ -135,4 +132,3 @@ void Node::repassMessage(NodeAddr callerAddr, MSG_PACKET packet){
 	}
 
 }
-

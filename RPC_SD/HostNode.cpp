@@ -5,7 +5,8 @@
 
 using namespace std;
 
-HostNode::HostNode(uint16_t port) : Node(port) {
+
+HostNode::HostNode(uint16_t port, string nickName) : Node(port, nickName){
 	CreateServer(port);
 }
 
@@ -14,7 +15,7 @@ void HostNode::CreateServer(uint16_t port) {
 	//Node::CreateServer(port);
 
 	//return neighbors Nodes list that the caller must connect
-	server_rpc.bind("getCloseNodes", [this](NodeAddr &newNode) {
+	server_rpc.bind("getNodesToConnect", [this](NodeAddr &newNode) {
 		return calculateNodesToConnect(newNode);
 	});
 

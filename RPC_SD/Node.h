@@ -17,13 +17,13 @@ struct NodeAddr{
 	
 	MSGPACK_DEFINE_ARRAY(ip, port)	//adiciona infomação sobre esse tipo de dado ao rpc, para poder ser transmitido corretamente
 	
-	bool operator==(const NodeAddr &other) const{	//define operador ==, necessário para a função hash usada em unordered_map
+	bool operator == (const NodeAddr &other) const{	//define operador ==, necessário para a função hash usada em unordered_map
 		return (ip == other.ip && port == other.port);
 	}
-	bool operator!=(const NodeAddr &other) const{	//define operador ==, necessário para a função hash usada em unordered_map
+	bool operator != (const NodeAddr &other) const{	//define operador ==, necessário para a função hash usada em unordered_map
 		return !(*this==other);
 	}
-	bool operator<(const NodeAddr &other) const{
+	bool operator < (const NodeAddr &other) const{
 		if (ip == other.ip)	return port < other.port;
 		
 		return ip < other.ip;
@@ -46,26 +46,21 @@ struct MSG_PACKET{
 
 //função hash para o tipo definido por usuário (strcut NodeAddr) funcionar como chave
 struct NodeAddr_hash{
-	//template <class T1, class T2>
 	std::size_t operator() (const NodeAddr &key)const{
 		return hash<string>()(key.ip) ^ hash<uint16_t>()(key.port);
-		//std::size_t seed = 0;
-		//boost::hash_combine(seed, boost::hash_value(key.ip));
-		//boost::hash_combine(seed, boost::hash_value(key.port));
-		//return seed;
 	}
 };
 
 
 class Node{
 	protected:
+	string _name;
 	map<NodeAddr, unsigned short> received_msg_counter;		//counters for the received messages, there's a counter for each Node in network (excluding itself)
 	std::mutex connections_mutex;
 	std::mutex counters_mutex;
 
 	public:
 	NodeAddr serverAddr;	//funciona como identificador do Node, seria mais apropriado chamar de myAddr?
-	string name="?";
 	unsigned short msgCounter = 0;		//message counter, for this node itself.
 	
 	//mapeia um endereço de nó para o objeto do cliente
@@ -82,8 +77,9 @@ class Node{
 	~Node();
 
 	//construtor, informa o endereço do Host a qual vai se conectar e porta
-	Node(uint16_t port);
+	Node(uint16_t port, string nickName="");
 
+	const string& name(){return _name;}
 	//realiza os binds do servidor
 	void CreateServer(uint16_t port);
 

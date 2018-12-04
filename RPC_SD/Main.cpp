@@ -28,7 +28,7 @@ void menu() {
 	uint16_t myPort, hostPort;
 
 	cout << "enter your nickName(leave blank to default): ";
-	cin >> name;
+	getline(cin, name);
 	
 
 	cout << " 1 - Connect to Host\n 2 - Host a chat\n0-Exit\n";

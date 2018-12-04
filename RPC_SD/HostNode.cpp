@@ -44,21 +44,8 @@ void HostNode::CreateServer(uint16_t port) {
 list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr) {
 	//List of nodes to connect to
 
-	for (int i = 0; i < priority_list.size(); i++) {
-		printf("PRIORITY LIST %d %d \n", priority_list[i].first, priority_list[i].second);
-	}
 	list<NodeAddr> nodes_to_connect;
 	vector<int> edges;
-
-
-	cout << "PRINT 1\n";
-	for (int i = 0; i < node_graph.size(); i++) {
-		for (int j = 0; j < node_graph.size(); j++) {
-			cout << node_graph[i][j] << " ";
-		}
-		cout << endl;
-	}
-
 
 	int qnode = (int)nodes_in_Network.size();
 
@@ -71,8 +58,6 @@ list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr) {
 	node_graph.push_back(edges);
 
 
-
-
 	//Gets first node from the priority list;
 	nodes_to_connect.push_back(nodes_in_Network[priority_list.front().first]);
 	priority_list.front().second--;
@@ -83,14 +68,6 @@ list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr) {
 	//If the first node of the priority list does not have any more slots, remove it
 	if (priority_list.front().second <= 0) {
 		priority_list.erase(priority_list.begin());
-	}
-
-	cout << "PRINT 2\n";
-	for (int i = 0; i < node_graph.size(); i++) {
-		for (int j = 0; j < node_graph.size(); j++) {
-			cout << node_graph[i][j] << " ";
-		}
-		cout << endl;
 	}
 
 	if (qnode >= NODES_TO_TRIGER_DIJKSTRA) {
@@ -176,7 +153,8 @@ list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr) {
 		priority_list.push_back(make_pair(qnode, NODE_CONNECTIONS - 1));
 	}
 
-	cout << "PRINT 3\n";
+
+	//// GABA AQUI 
 	for (int i = 0; i < node_graph.size(); i++) {
 		for (int j = 0; j < node_graph[i].size(); j++) {
 			cout << node_graph[i][j] << " ";

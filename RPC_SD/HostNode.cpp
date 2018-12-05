@@ -7,7 +7,15 @@ using namespace std;
 
 
 HostNode::HostNode(uint16_t port, string nickName) : Node(port, nickName){
+	node_graph.clear();
 	CreateServer(port);
+	matrix_window = new thread(&HostNode::run_matrix_observer, this);
+}
+
+HostNode::~HostNode(){
+	end_thread = true;
+	matrix_print.notify_one();
+	matrix_window->join();
 }
 
 void HostNode::CreateServer(uint16_t port) {
@@ -39,6 +47,32 @@ void HostNode::CreateServer(uint16_t port) {
 
 	priority_list.push_back(make_pair(0, HOST_CONNECTIONS));
 	qnode = 1;
+}
+
+void HostNode::run_matrix_observer(){
+	FILE *pipe = fopen("graph_pipe.file", "w+");
+	int pid = system("gnome-terminal -e \"bash -c 'tail -f graph_pipe.file'\" & exit $!");
+
+
+	unique_lock<mutex> lock(matrix_mtx);
+	while(end_thread == false){
+		//fprintf(pipe, "\033[2J");
+		system("echo $(clear) > graph_pipe.file");
+		fprintf(pipe, "Current number of Nodes in net: " YEL("%lu\n"), nodes_in_Network.size());
+		
+		for (int i = 0; i < node_graph.size(); i++) {
+			for (int j = 0; j < node_graph[i].size(); j++) {
+				fprintf(pipe, BLU(" %d"), node_graph[i][j]);
+			}
+			fprintf(pipe, "\n");
+		}
+		fflush(pipe);
+		matrix_print.wait(lock);
+	}
+
+	fclose(pipe);
+
+	kill(pid, SIGINT);
 }
 
 list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr) {
@@ -154,13 +188,8 @@ list<NodeAddr> HostNode::calculateNodesToConnect(NodeAddr newNodeAddr) {
 	}
 
 
-	//// GABA AQUI 
-	for (int i = 0; i < node_graph.size(); i++) {
-		for (int j = 0; j < node_graph[i].size(); j++) {
-			cout << node_graph[i][j] << " ";
-		}
-		cout << endl;
-	}
+	//// GABA AQUI
+	matrix_print.notify_one();	//notifica a thread que imprime a matriz no outro terminal
 
 	return(nodes_to_connect);
 

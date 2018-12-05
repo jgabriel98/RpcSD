@@ -17,6 +17,7 @@ void printConnectionStates(Node &node);
 string getTimeLog();
 
 int main(){
+	FILE *matrix_log = fopen("matrix.pipe","w");
 	//Print menu interface
 	menu();
 

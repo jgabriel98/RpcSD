@@ -1,6 +1,10 @@
 #pragma once
 #include <iostream>
 #include <stdint.h>
+#include <thread>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <signal.h>
 
 #include <vector>
 #include <utility>

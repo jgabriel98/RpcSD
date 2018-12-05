@@ -23,8 +23,8 @@ void HostNode::CreateServer(uint16_t port) {
 	//Node::CreateServer(port);
 
 	//return neighbors Nodes list that the caller must connect
-	server_rpc.bind("getNodesToConnect", [this](NodeAddr &newNode) {
-		return calculateNodesToConnect(newNode);
+	server_rpc.bind("getNodesToConnect", [this](NodeAddr &callerAddr) {
+		return calculateNodesToConnect(callerAddr);
 	});
 
 	server_rpc.bind("registerNodeToNet", [this](NodeAddr &newNode) {
@@ -46,7 +46,6 @@ void HostNode::CreateServer(uint16_t port) {
 	node_graph.push_back(n0);
 
 	priority_list.push_back(make_pair(0, HOST_CONNECTIONS));
-	qnode = 1;
 }
 
 void HostNode::run_matrix_observer(){

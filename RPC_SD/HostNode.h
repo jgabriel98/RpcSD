@@ -22,15 +22,13 @@ private:
 	void run_matrix_observer();
 
 public:
-	void CreateServer(uint16_t port);
+	vector<vector<int>> node_graph;
+	vector<pair<int, int>> priority_list;
+
 	HostNode(uint16_t port, string nickName = "");
 	~HostNode();
 
-	vector<vector<int>> node_graph;
-
-	vector<pair<int, int>> priority_list;
-
-	int qnode;
+	void CreateServer(uint16_t port);
 
 };
 

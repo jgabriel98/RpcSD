@@ -62,11 +62,11 @@ void HostNode::run_matrix_observer(){
 	while(end_thread == false){
 		//fprintf(pipe, "\033[2J");
 		system("echo $(clear) > graph_pipe.file");
-		fprintf(pipe, "Current number of Nodes in net: " YEL("%lu\n"), nodes_in_Network.size());
+		fprintf(pipe, "Current number of Nodes in net: " BOLD(RED("%lu\n")), nodes_in_Network.size());
 		
 		for (int i = 0; i < node_graph.size(); i++) {
 			for (int j = 0; j < node_graph[i].size(); j++) {
-				fprintf(pipe, BLU(" %d"), node_graph[i][j]);
+				fprintf(pipe, BOLD(BLU(" %d")), node_graph[i][j]);
 			}
 			fprintf(pipe, "\n");
 		}

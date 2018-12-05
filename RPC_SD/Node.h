@@ -60,19 +60,17 @@ class Node{
 	std::mutex counters_mutex;
 
 	public:
+	rpc::server server_rpc;
 	NodeAddr serverAddr;	//funciona como identificador do Node, seria mais apropriado chamar de myAddr?
 	unsigned short msgCounter = 0;		//message counter, for this node itself.
 	
 	//mapeia um endereço de nó para o objeto do cliente
 	unordered_map<NodeAddr, rpc::client *, NodeAddr_hash> conexoes_client;
-	/*recomenda-se usar enviar uma struct NodeAddr para identificar o caller, e dentro das funções Bind usar o NodeAddr resultante para  obter o objeto do cliente (rpc::client)
-	  já o segundo (conexoes_client) fora das funções Bind, no código normal mesmo, para acessar diretamente um objeto do cliente através de seu endereço (NodeAddr)
-	*/
+	/*recomenda-se enviar uma struct NodeAddr para identificar o caller*/
 
 //ps: sim, precisamos do unordered_map, pra pordermos acessar o cliente diretamente e também garantir que só existe um registro para cada NodeAddr
 
 
-	rpc::server server_rpc;
 
 	~Node();
 

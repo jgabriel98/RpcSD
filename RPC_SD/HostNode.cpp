@@ -51,7 +51,11 @@ void HostNode::CreateServer(uint16_t port) {
 
 void HostNode::run_matrix_observer(){
 	FILE *pipe = fopen("graph_pipe.file", "w+");
+	#ifdef _WIN32
+	int pid = system("xterm -e cat graph_pipe.file & exit $!");
+	#else
 	int pid = system("gnome-terminal -e \"bash -c 'tail -f graph_pipe.file'\" & exit $!");
+	#endif
 
 
 	unique_lock<mutex> lock(matrix_mtx);

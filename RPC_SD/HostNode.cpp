@@ -51,7 +51,8 @@ void HostNode::CreateServer(uint16_t port) {
 void HostNode::run_matrix_observer(){
 	FILE *pipe = fopen("graph_pipe.file", "w+");
 	#ifdef _WIN32
-	int pid = system("start cmd -e cat graph_pipe.file");
+	//int pid = system("start cmd -e cat graph_pipe.file");
+	int pid = system("start powershell -NoExit -Command \"Get-Content log.log -Wait\"");
 	#else
 	int pid = system("gnome-terminal -e \"bash -c 'tail -f graph_pipe.file'\" & exit $!");
 	#endif

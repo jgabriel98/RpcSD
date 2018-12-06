@@ -54,7 +54,7 @@ void HostNode::run_matrix_observer(){
 	//int pid = system("start cmd -e cat graph_pipe.file");
 	int pid = system("start powershell -NoExit -Command \"Get-Content graph_pipe.file -Wait\"");
 #else
-	int pid = system("gnome-terminal -e \"bash -c 'tail -f graph_pipe.file'\" & exit $!");
+	int pid = system("gnome-terminal --hide-menubar --geometry=60x23 -e \"bash -c 'tail -f graph_pipe.file'\" & exit $!");
 	#endif
 
 
